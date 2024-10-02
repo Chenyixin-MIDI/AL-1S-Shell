@@ -1,14 +1,28 @@
 
+
+if __name__=="__main__":
+    pass;
+import getpass#unlook函数所需模块
 import time
 import os
 import datetime
 
 import tkinter as tk
 from tkinter import filedialog
-import keyboard
+
 import win32con
 import win32api
 import time
+
+
+
+
+def worklog_Write(includes):#工作日志
+    if includes not in("", " ", "\n"):#跳过空事件
+        with open("worklog.txt","a")as f:
+            f.write(includes)
+current_time = datetime.datetime.now()
+worklog_Write(current_time.strftime("%Y-%m-%d %H:%M:%S")+"\n")
 def select_file():
     root = tk.Tk()
     root.withdraw()  
@@ -21,37 +35,31 @@ def select_file():
         print("Choose file--"+file_path)
     else:
         print("WrongPath")
+    worklog_Write("choose_file:"+file_path+" ")
     return file_path
 
 def unlock(lock):
+    count=0
     unlock=""
     lock=lock.split(" d")
     for i in lock:
+        if count>=70:
+            unlock=unlock+"\n"
+            count=0
         if i=="":
             pass;
         else:
             i=int(i)
             i=i-67130
             unlock=unlock+str(chr(i))
+            count=count+1
+    worklog_Write("unlock:"+unlock)
     return unlock
 
 
-def looklessInput():
-    print(":")
-    key=""
-    i=""
-    while i!="enter":
-        
-        i=keyboard.read_key()
-        if i =="enter":
-            pass;
-        else:    
-            key=key+i
-
-        win32api.keybd_event(8, 0, 0, 0)  # 键盘按下
-        time.sleep(0.1)
-        win32api.keybd_event(8, 0, win32con.KEYEVENTF_KEYUP, 0)  # 键盘松开 # 打开 win
-    print(key)
+def unlook():
+    key = getpass.getpass("请输入：")
+    worklog_Write("unlookInput:"+key)
     return key
 
 root=False
@@ -76,10 +84,11 @@ with open("set/welcomeWords.ini")as f:
 
 
 print(welcomeWords)
+worklog_Write("welcomeWords:"+welcomeWords+"\n")
 c_first=""
 while c_first not in ["esc","ESC"]:
     c_first=input(">>>")
-
+    worklog_Write(c_first+"\n")
     c=c_first.split(' ')
     lenC=len(c)
 
@@ -174,17 +183,16 @@ while c_first not in ["esc","ESC"]:
 
     elif c[0]=="root":
         
-        rootPassword_Input=looklessInput()
+        rootPassword_Input=unlook()
         rootPassword=""
 
 
     #对Root密码进行解密：
-        with open("key.ini")as f:
+        with open("set/key.ini")as f:
             rootPassword_lock=f.read()
         
         rootPassword_lock=rootPassword_lock.split(" d")
 
-    #    print(rootPassword_lock)
         for i in rootPassword_lock:
             if i =="":
                 pass;
@@ -203,8 +211,8 @@ while c_first not in ["esc","ESC"]:
 
     elif c[0] in ["pa","Pa","PA"]:
         if root:
-            if lenC==2 and c[1] in ["-all","-A","-All"]:
-                with open("lock.ini")as f:
+            if lenC==2 and c[1] in ["-all","-A","-All","-a"]:
+                with open("set/lock.ini")as f:
                     lock=f.read()
                 print(unlock(lock))
         else:
